@@ -51,10 +51,10 @@ public class VoterDataExtractionPDFtoCSV {
 		double intx = 0.4265;
 		double inty = 0.8861;
 
-		int Frompage = 7;
+		int Frompage = 3;
 		// int toPage = new PDDocument().load(new File(PdfFilePath)).getNumberOfPages()
 		// - 2;
-		int toPage = 7;
+		int toPage = 3;
 		System.out.println(toPage);
 		int col = 3;
 		int row = 10;
@@ -78,7 +78,7 @@ public class VoterDataExtractionPDFtoCSV {
 					String textDataString = gettext(filePath);
 					List finalList = GetValidDataFromVoterID(textDataString);
 					System.out.println(finalList);
-					writeDataToCSV(csvFile, finalList, i);
+					// writeDataToCSV(csvFile, finalList, i);
 					x += 6.72;
 					number++;
 				}
@@ -87,7 +87,7 @@ public class VoterDataExtractionPDFtoCSV {
 		}
 	}
 
-	@AfterTest
+	@AfterTest(enabled = false)
 	void deletedataFromFolder() {
 		deleteAllFilesInFolder(FolderPath);
 	}
@@ -147,8 +147,39 @@ public class VoterDataExtractionPDFtoCSV {
 	public static List GetValidDataFromVoterID(String text) {
 		List dataList = new ArrayList();
 
+		 text = text.replaceAll("[\\?|\\||\\]|\\[]", "");
+		String[] lines = text.split("\n");
+		String firstLine = lines[0].trim();
+		System.out.println(firstLine);
+		String slNO = " ";
+		String voterID = "";
+		if (!firstLine.contains("Name")) {
+			String[] firstLineParts = firstLine.split(" ");
+			slNO = firstLineParts[0];
+			System.out.println("SerialNu " + slNO);
+		//	dataList.add(slNO);
+
+			for (String string : firstLineParts) {
+				if (string.length() == 10) {
+
+					if (string.charAt(3) == 'S') {
+						StringBuilder modifiedString = new StringBuilder(string);
+						modifiedString.setCharAt(3, '5');
+						voterID = modifiedString.toString();
+					} else {
+						voterID = string;
+					}
+				} else {
+					voterID = " ";
+				}
+			}
+			//dataList.add(voterID);
+		}
+		dataList.add(slNO);
+		dataList.add(voterID);
+
+		// System.out.println("voterId " + voterID);
 		Pattern imageIdPattern = Pattern.compile("[|\\[]\\s*(\\d+)");
-		Pattern idPattern = Pattern.compile("\\b([A-Z]{3}\\d{7})\\b");
 		Pattern namePattern = Pattern.compile("Name\\s*:\\s*(.+)");
 		Pattern relativeNamePattern = Pattern.compile("(?:Fathers|Husbands|Mothers|spouse) Name\\s*:\\s*(.+)");
 		Pattern houseNumberPattern = Pattern.compile("House Number\\s*:\\s*(.+)\\s*Photo");
@@ -156,21 +187,18 @@ public class VoterDataExtractionPDFtoCSV {
 		Pattern genderPattern = Pattern.compile("Gender\\s*:\\s*(\\w+)");
 
 		// Extract and print each field
-		System.out.println("Extracted Data:");
+		// System.out.println("Extracted Data:");
 
 		// Extract Image ID
 		Matcher matcher = imageIdPattern.matcher(text);
-		if (matcher.find()) {
-			System.out.println("Image ID: " + matcher.group(1));
-			dataList.add(matcher.group(1));
-		}
-
-		// Extract ID
-		matcher = idPattern.matcher(text);
-		if (matcher.find()) {
-			System.out.println("ID: " + matcher.group(1));
-			dataList.add(matcher.group(1));
-		}
+		/*
+		 * if (matcher.find()) { System.out.println("Image ID: " + matcher.group(1));
+		 * dataList.add(matcher.group(1)); }
+		 * 
+		 * // Extract ID matcher = idPattern.matcher(text); if (matcher.find()) {
+		 * System.out.println("ID: " + matcher.group(1));
+		 * dataList.add(matcher.group(1)); }
+		 */
 
 		// Extract Name
 		matcher = namePattern.matcher(text);
@@ -248,18 +276,18 @@ public class VoterDataExtractionPDFtoCSV {
 		String page = String.valueOf(PageNumbaer);
 
 		// Prepare data list
-		List<String> data = Arrays.asList(quoteAsText(dynamicData.get(0)), // s.no (dynamic)
-				quoteAsText(staticListPartNo), // List part No (static)
-				quoteAsText(staticStateDistrict), // State District (static)
-				quoteAsText(staticAssembly), // Assembly (static)
-				quoteAsText(staticDivisionNoAndName), // Division no & name (static)
-				quoteAsText(dynamicData.get(1)), // Voter id (dynamic)
-				quoteAsText(dynamicData.get(2)), // Name (dynamic)
-				quoteAsText(dynamicData.get(3)), // Husband Name (dynamic)
-				quoteAsText(dynamicData.get(4)), // House Number (dynamic)
-				quoteAsText(dynamicData.get(5)), // Age (dynamic)
-				quoteAsText(dynamicData.get(6)), // Gender (dynamic)
-				quoteAsText(page) // Page Number (dynamic)
+		List<String> data = Arrays.asList(quote(dynamicData.get(0) + ""), // s.no (dynamic)
+				(staticListPartNo), // List part No (static)
+				(staticStateDistrict), // State District (static)
+				(staticAssembly), // Assembly (static)
+				(staticDivisionNoAndName), // Division no & name (static)
+				(dynamicData.get(1) + ""), // Voter id (dynamic)
+				(dynamicData.get(2) + ""), // Name (dynamic)
+				(dynamicData.get(3) + ""), // Husband Name (dynamic)
+				(dynamicData.get(4) + ""), // House Number (dynamic)
+				(dynamicData.get(5) + ""), // Age (dynamic)
+				(dynamicData.get(6) + ""), // Gender (dynamic)
+				(page) // Page Number (dynamic)
 		);
 		File csvFile = new File(csvFilePath);
 		boolean isFileEmpty = !csvFile.exists() || csvFile.length() == 0;
@@ -285,10 +313,39 @@ public class VoterDataExtractionPDFtoCSV {
 	}
 
 	// Helper method to wrap data in double quotes
-	private static String quote(String value) {
+	public static String quote(String value) {
 		return "\"" + value + "\"";
 	}
-	private static String quoteAsText(String value) {
-        return "\"'" + value + "\"";
-    }
+
+	public static String quoteAsText(String value) {
+		return "\"'" + value + "\"";
+	}
+
+	public static void hanleline(String text) {
+		text = text.replaceAll("[\\[\\]|]", "");
+		String[] lines = text.split("\n");
+		String firstLine = lines[0].trim();
+		System.out.println(firstLine);
+		String[] firstLineParts = firstLine.split(" ");
+		String slNO = firstLineParts[0];
+		System.out.println("SerialNu " + slNO);
+
+		String voterID = "";
+		for (String string : firstLineParts) {
+			if (string.length() == 10) {
+
+				if (string.charAt(3) == 'S') {
+					StringBuilder modifiedString = new StringBuilder(string);
+					modifiedString.setCharAt(3, '5');
+					voterID = modifiedString.toString();
+				} else {
+					voterID = string;
+				}
+			} else {
+				voterID = " ";
+			}
+		}
+
+		// System.out.println("voterId " + voterID);
+	}
 }
