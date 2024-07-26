@@ -78,7 +78,7 @@ public class VoterDataExtractionPDFtoCSV {
 					String textDataString = gettext(filePath);
 					List finalList = GetValidDataFromVoterID(textDataString);
 					System.out.println(finalList);
-					 writeDataToCSV(csvFile, finalList, i);
+					writeDataToCSV(csvFile, finalList, i);
 					x += 6.72;
 					number++;
 				}
@@ -133,7 +133,7 @@ public class VoterDataExtractionPDFtoCSV {
 
 		ITesseract tesseract = new Tesseract();
 		tesseract.setDatapath("C:\\tessdata");
-		tesseract.setLanguage("Devanagari");
+		 tesseract.setLanguage("Devanagari");
 
 		// Perform OCR on the image
 		String text = tesseract.doOCR(new File(imagePath));
@@ -147,48 +147,49 @@ public class VoterDataExtractionPDFtoCSV {
 	public static List GetValidDataFromVoterID(String text) {
 		List dataList = new ArrayList();
 
-		 text = text.replaceAll("[\\?|\\||\\]|\\[]", "");
+		text = text.replaceAll("[\\?|\\||\\]|\\[]", "");
 		String[] lines = text.split("\n");
 		String firstLine = lines[0].trim();
-		firstLine=firstLine.replace("?", "");
+		firstLine = firstLine.replace("?", "");
 		System.out.println(firstLine);
 		String slNO = " ";
 		String voterID = "";
 		if (!firstLine.contains("Name")) {
 			String[] firstLineParts = firstLine.split(" ");
-			slNO = firstLineParts[0];
+			slNO = firstLineParts[0].replaceAll("[^0-9]", "");
+			;
 			System.out.println("SerialNu " + slNO);
-		//	dataList.add(slNO);
+			// dataList.add(slNO);
 
-			  for (String string : firstLineParts) {
-		            if (string.length() == 10|| string.length() == 11) {
-		                char fourthChar = string.charAt(3);
-		                if (fourthChar == 'S') {
-		                    // Replace 'S' with '5'
-		                    StringBuilder modifiedString = new StringBuilder(string);
-		                    modifiedString.setCharAt(3, '5');
-		                    voterID = modifiedString.toString();
-		                } else if (Character.isLetter(fourthChar)) {
-		                    // Replace any other alphabet with an empty string
-		                    StringBuilder modifiedString = new StringBuilder(string);
-		                    modifiedString.deleteCharAt(3);
-		                    voterID = modifiedString.toString();
-		                } else {
-		                    voterID = string;
-		                }
-		            } else {
-		                voterID = " ";
-		            }
-			  }
-			//dataList.add(voterID);
+			for (String string : firstLineParts) {
+				if (string.length() == 10 || string.length() == 11) {
+					char fourthChar = string.charAt(3);
+					if (fourthChar == 'S') {
+						// Replace 'S' with '5'
+						StringBuilder modifiedString = new StringBuilder(string);
+						modifiedString.setCharAt(3, '5');
+						voterID = modifiedString.toString();
+					} else if (Character.isLetter(fourthChar)) {
+						// Replace any other alphabet with an empty string
+						StringBuilder modifiedString = new StringBuilder(string);
+						modifiedString.deleteCharAt(3);
+						voterID = modifiedString.toString();
+					} else {
+						voterID = string;
+					}
+				} else {
+					voterID = " ";
+				}
+			}
+			// dataList.add(voterID);
 		}
 		dataList.add(slNO);
 		dataList.add(voterID);
 
 		// System.out.println("voterId " + voterID);
-		Pattern imageIdPattern = Pattern.compile("[|\\[]\\s*(\\d+)");
+		// Pattern imageIdPattern = Pattern.compile("[|\\[]\\s*(\\d+)");
 		Pattern namePattern = Pattern.compile("Name\\s*:\\s*(.+)");
-		Pattern relativeNamePattern = Pattern.compile("(?:Fathers|Husbands|Mothers|spouse) Name\\s*:\\s*(.+)");
+		Pattern relativeNamePattern = Pattern.compile("(?:Fathers|Husbands|Mothers|Spouse) Name\\s*:\\s*(.+)");
 		Pattern houseNumberPattern = Pattern.compile("House Number\\s*:\\s*(.+)\\s*Photo");
 		Pattern agePattern = Pattern.compile("Age\\s*:\\s*(\\d+)");
 		Pattern genderPattern = Pattern.compile("Gender\\s*:\\s*(\\w+)");
@@ -197,7 +198,7 @@ public class VoterDataExtractionPDFtoCSV {
 		// System.out.println("Extracted Data:");
 
 		// Extract Image ID
-		Matcher matcher = imageIdPattern.matcher(text);
+		Matcher matcher;
 		/*
 		 * if (matcher.find()) { System.out.println("Image ID: " + matcher.group(1));
 		 * dataList.add(matcher.group(1)); }
@@ -212,6 +213,8 @@ public class VoterDataExtractionPDFtoCSV {
 		if (matcher.find()) {
 			// System.out.println("Name: " + matcher.group(1));
 			dataList.add(matcher.group(1));
+		} else {
+			dataList.add(" ");
 		}
 
 		// Extract Relative's Name (Father or Husband)
@@ -219,6 +222,8 @@ public class VoterDataExtractionPDFtoCSV {
 		if (matcher.find()) {
 			// System.out.println("Father's/Husband's Name: " + matcher.group(1));
 			dataList.add(matcher.group(1));
+		} else {
+			dataList.add(" ");
 		}
 
 		// Extract House Number
@@ -226,6 +231,8 @@ public class VoterDataExtractionPDFtoCSV {
 		if (matcher.find()) {
 			// System.out.println("House Number: " + matcher.group(1));
 			dataList.add(matcher.group(1));
+		} else {
+			dataList.add(" ");
 		}
 
 		// Extract Age
@@ -233,6 +240,8 @@ public class VoterDataExtractionPDFtoCSV {
 		if (matcher.find()) {
 			// System.out.println("Age: " + matcher.group(1));
 			dataList.add(matcher.group(1));
+		} else {
+			dataList.add(" ");
 		}
 
 		// Extract Gender
@@ -240,7 +249,14 @@ public class VoterDataExtractionPDFtoCSV {
 		if (matcher.find()) {
 			// System.out.println("Gender: " + matcher.group(1));
 			dataList.add(matcher.group(1));
+		} else if (text.contains("Male")) {
+			dataList.add("Male");
+		} else if (text.contains("Female")) {
+			dataList.add("Female");
+		} else {
 		}
+		dataList.add(" ");
+
 		// System.out.println(dataList);
 		return dataList;
 	}
