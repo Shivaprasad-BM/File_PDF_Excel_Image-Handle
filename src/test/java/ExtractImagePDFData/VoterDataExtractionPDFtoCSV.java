@@ -78,7 +78,7 @@ public class VoterDataExtractionPDFtoCSV {
 					String textDataString = gettext(filePath);
 					List finalList = GetValidDataFromVoterID(textDataString);
 					System.out.println(finalList);
-					// writeDataToCSV(csvFile, finalList, i);
+					 writeDataToCSV(csvFile, finalList, i);
 					x += 6.72;
 					number++;
 				}
@@ -150,6 +150,7 @@ public class VoterDataExtractionPDFtoCSV {
 		 text = text.replaceAll("[\\?|\\||\\]|\\[]", "");
 		String[] lines = text.split("\n");
 		String firstLine = lines[0].trim();
+		firstLine=firstLine.replace("?", "");
 		System.out.println(firstLine);
 		String slNO = " ";
 		String voterID = "";
@@ -159,20 +160,26 @@ public class VoterDataExtractionPDFtoCSV {
 			System.out.println("SerialNu " + slNO);
 		//	dataList.add(slNO);
 
-			for (String string : firstLineParts) {
-				if (string.length() == 10) {
-
-					if (string.charAt(3) == 'S') {
-						StringBuilder modifiedString = new StringBuilder(string);
-						modifiedString.setCharAt(3, '5');
-						voterID = modifiedString.toString();
-					} else {
-						voterID = string;
-					}
-				} else {
-					voterID = " ";
-				}
-			}
+			  for (String string : firstLineParts) {
+		            if (string.length() == 10|| string.length() == 11) {
+		                char fourthChar = string.charAt(3);
+		                if (fourthChar == 'S') {
+		                    // Replace 'S' with '5'
+		                    StringBuilder modifiedString = new StringBuilder(string);
+		                    modifiedString.setCharAt(3, '5');
+		                    voterID = modifiedString.toString();
+		                } else if (Character.isLetter(fourthChar)) {
+		                    // Replace any other alphabet with an empty string
+		                    StringBuilder modifiedString = new StringBuilder(string);
+		                    modifiedString.deleteCharAt(3);
+		                    voterID = modifiedString.toString();
+		                } else {
+		                    voterID = string;
+		                }
+		            } else {
+		                voterID = " ";
+		            }
+			  }
 			//dataList.add(voterID);
 		}
 		dataList.add(slNO);
