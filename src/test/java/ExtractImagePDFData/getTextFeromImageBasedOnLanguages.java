@@ -14,7 +14,7 @@ public class getTextFeromImageBasedOnLanguages {
 		tesseract = new Tesseract();
 		tesseract.setDatapath("C:\\tessdata");
 		tesseract.setLanguage("eng");
-		String imagePath = "C:\\Temp\\PdfSection19.PNG";
+		String imagePath = "C:\\Users\\user\\Downloads\\RMG_Projects (8).png";
 
 		// Perform OCR on the image
 		String text = tesseract.doOCR(new File(imagePath));

@@ -24,7 +24,7 @@ public class GoogleOCR {
 
 	// Detects text in the specified image.
 	public static void detectText(String filePath) throws IOException {
-		List<AnnotateImageRequest> requests = new ArrayList<>();
+		List<AnnotateImageRequest> requests = new ArrayList();
 
 		ByteString imgBytes = ByteString.readFrom(new FileInputStream(filePath));
 

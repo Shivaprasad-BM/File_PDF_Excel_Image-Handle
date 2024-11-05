@@ -13,7 +13,7 @@ import com.amazonaws.services.textract.model.Document;
 public class AmazonTextractOCR {
 	
 	public static void main(String[] args) throws Throwable {
-		getText("C:\\Temp\\PdfSection26.PNG");
+		getText("C:\\Users\\user\\Downloads\\Screenshot 2024-08-22 161202.png");
 	}
     public static String getText(String imagePath) throws Exception {
         AmazonTextract client = AmazonTextractClientBuilder.standard().build();
